@@ -9,7 +9,7 @@ import java.util.Map;
 @RestController
 public class Controller1 {
     double threshold = 0.00015;
-    int decimalPlaces = 5;
+    int decimalPlaces = 6;
 
     //2) UID
     @GetMapping("/api/v1/uid")
