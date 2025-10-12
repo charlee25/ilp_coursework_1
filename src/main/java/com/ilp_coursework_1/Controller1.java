@@ -1,15 +1,21 @@
 package com.ilp_coursework_1;
 
+import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.Map;
+import java.util.HashMap;
 
 @RestController
 public class Controller1 {
     double threshold = 0.00015;
     int decimalPlaces = 6;
+    double angleIncrement = 22.5;
 
     //2) UID
     @GetMapping("/api/v1/uid")
@@ -19,32 +25,32 @@ public class Controller1 {
 
     //3) distanceTo
     @PostMapping("/api/v1/distanceTo")
-    public double getDistance(@RequestBody Map<String, Position> positions){
-        Position pos1 = positions.get("position1");
-        Position pos2 = positions.get("position2");
+    public ResponseEntity<Double> getDistance(@Valid @RequestBody DistanceRequest request) {
+        Position pos1 = request.getPosition1();
+        Position pos2 = request.getPosition2();
 
-        return CalculateDistance(pos1, pos2);
-
+        Double distance = CalculateDistance(pos1, pos2);
+        return ResponseEntity.ok(distance);
     }
 
     //4) isCloseTo
     @PostMapping("/api/v1/isCloseTo")
-    public boolean isCloseTo(@RequestBody Map<String, Position> positions){
-        Position pos1 = positions.get("position1");
-        Position pos2 = positions.get("position2");
+    public ResponseEntity<Boolean> isCloseTo(@Valid @RequestBody DistanceRequest request){
+        Position pos1 = request.getPosition1();
+        Position pos2 = request.getPosition2();
 
         double distance = CalculateDistance(pos1, pos2);
-
-        return distance < threshold;
+        return ResponseEntity.ok(distance < threshold);
     }
 
     //5) nextPosition
     @PostMapping("/api/v1/nextPosition")
-    public Position nextPosition(@RequestBody Map<String, Object> body){
+    public ResponseEntity<?> nextPosition(@Valid @RequestBody NextPositionRequest request){
 
-        Map<String, Double> startMap = (Map<String, Double>) body.get("start");
-        Position start = new Position(startMap.get("lat"), startMap.get("lng"));
-        int angle = (int) body.get("angle");
+        Position start = request.getStart();
+        double angle = request.getAngle(); // Angle in DEGREES
+
+        if (angle % angleIncrement == 0){
 
         double deltaLat = threshold * Math.cos(Math.toRadians(angle));
         double deltaLng = threshold * Math.sin(Math.toRadians(angle));
@@ -55,7 +61,13 @@ public class Controller1 {
         double roundedLat = Rounding(newLat, decimalPlaces);
         double roundedLng = Rounding(newLng, decimalPlaces);
 
-        return new Position(roundedLng, roundedLat);
+        return ResponseEntity.ok(new Position(roundedLat, roundedLng));
+        }
+        else {
+            Map<String, String> error = new HashMap<>();
+            error.put("error", "Angle must be a multiple of " + angleIncrement + " degrees");
+            return ResponseEntity.badRequest().body(error);
+        }
     }
 
     //6) isInRegion
@@ -88,16 +100,24 @@ public class Controller1 {
 
         return (intersectCount % 2) == 1;
     }
+    /*@ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<Map<String, String>> handleValidationExceptions(MethodArgumentNotValidException ex) {
+        Map<String, String> errors = new HashMap<>();
+        ex.getBindingResult().getFieldErrors().forEach(error ->
+                errors.put(error.getField(), error.getDefaultMessage())
+        );
+        return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
+    }*/
 
 
     //------------------------------Helper functions---------------------------------------
     public double CalculateDistance(Position pos1, Position pos2){
-        double lat1 = pos1.getLat();
-        double lng1 = pos1.getLng();
-        double lat2 = pos2.getLat();
-        double lng2 = pos2.getLng();
+        Double lat1 = pos1.getLat();
+        Double lng1 = pos1.getLng();
+        Double lat2 = pos2.getLat();
+        Double lng2 = pos2.getLng();
 
-        double distance = Math.sqrt(Math.pow(lat2 - lat1, 2) + Math.pow(lng2 - lng1, 2));
+        Double distance = Math.sqrt(Math.pow(lat2 - lat1, 2) + Math.pow(lng2 - lng1, 2));
         return Rounding(distance, decimalPlaces);
     }
 
@@ -136,5 +156,13 @@ public class Controller1 {
         double slopeSeg1 = (x2 - x1) != 0 ? (y2 - y1) / (x2 - x1) : Double.MAX_VALUE;
         double slopeSeg2 = (px - x1) != 0 ? (py - y1) / (px - x1) : Double.MAX_VALUE;
         return slopeSeg2 >= slopeSeg1;
+    }
+    public ResponseEntity<?> checkMissingPositions(Position pos1, Position pos2){
+        if (pos1 == null || pos2 == null) {
+            Map<String, String> error = new HashMap<>();
+            error.put("error", "Both pos1 and pos2 must be provided in the request body");
+            return ResponseEntity.badRequest().body(error);
+        }
+        else return null;
     }
 }

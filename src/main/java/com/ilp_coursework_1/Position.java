@@ -1,14 +1,24 @@
 package com.ilp_coursework_1;
 
-public class Position {
-    private double lat;
-    private double lng;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 
-    public Position(double lat, double lng) {
+public class Position {
+    @NotNull(message = "Latitude not found")
+    private Double lat;
+    @NotNull(message = "Longitude not found")
+    private Double lng;
+
+    public Position() {
+    }
+    public Position(Double lat, Double lng) {
         this.lat = lat;
         this.lng = lng;
     }
 
-    public double getLat() {return lat;}
-    public double getLng() {return lng;}
+    public Double getLat() {return lat;}
+    public void setLat(Double lat) {this.lat = lat;}
+    public Double getLng() {return lng;}
+    public void setLng(Double lng) {this.lng = lng;}
+
 }

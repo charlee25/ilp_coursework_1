@@ -6,6 +6,8 @@ public class Region {
     private String name;
     private List<Position> vertices;
 
+    public Region() {
+    }
     public Region(String name, List<Position> vertices) {
         this.name = name;
         this.vertices = vertices;
