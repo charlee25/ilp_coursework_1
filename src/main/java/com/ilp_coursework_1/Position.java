@@ -21,4 +21,24 @@ public class Position {
     public Double getLng() {return lng;}
     public void setLng(Double lng) {this.lng = lng;}
 
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null || getClass() != obj.getClass()) return false;
+        Position other = (Position) obj;
+
+        double epsilon = 1e-9;
+        return Math.abs(this.lat - other.lat) < epsilon &&
+                Math.abs(this.lng - other.lng) < epsilon;
+    }
+
+    @Override
+    public int hashCode() {
+        long tempLat = Double.doubleToLongBits(lat);
+        long tempLng = Double.doubleToLongBits(lng);
+        return (int) (tempLat ^ (tempLat >>> 32)) ^
+                (int) (tempLng ^ (tempLng >>> 32));
+    }
+
+
 }

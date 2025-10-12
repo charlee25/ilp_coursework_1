@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
 
@@ -72,21 +73,15 @@ public class Controller1 {
 
     //6) isInRegion
     @PostMapping("/api/v1/isInRegion")
-    public boolean isInRegion(@RequestBody Map<String, Object> body){
-        Map<String, Double> pointMap = (Map<String, Double>) body.get("position");
-        Position point = new Position(pointMap.get("lat"), pointMap.get("lng"));
+    public ResponseEntity<?> isInRegion(@Valid @RequestBody RegionRequest request) {
+        Position point = request.getPosition();
+        Region region = request.getRegion();
 
-        Map<String, Object> regionMap = (Map<String, Object>) body.get("region");
-        String regionName = (String) regionMap.get("name");
-        java.util.List<Map<String, Double>> verticesList = (java.util.List<Map<String, Double>>) regionMap.get("vertices");
-
-        java.util.List<Position> vertices = new java.util.ArrayList<>();
-        for (Map<String, Double> vertexMap : verticesList) {
-            Position vertex = new Position(vertexMap.get("lat"), vertexMap.get("lng"));
-            vertices.add(vertex);
+        if (!region.checkValid()) {
+            Map<String, String> error = new HashMap<>();
+            error.put("error", "Region not valid. Must have at least 4 vertices, first and last vertex must be the same, no duplicate vertices allowed (except first and last)");
+            return ResponseEntity.badRequest().body(error);
         }
-
-        Region region = new Region(regionName, vertices);
 
         int intersectCount = 0;
         for (int i = 0; i < region.getVertices().size(); i++) {
@@ -98,19 +93,10 @@ public class Controller1 {
             }
         }
 
-        return (intersectCount % 2) == 1;
+        return ResponseEntity.ok(intersectCount % 2 == 1);
     }
-    /*@ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<Map<String, String>> handleValidationExceptions(MethodArgumentNotValidException ex) {
-        Map<String, String> errors = new HashMap<>();
-        ex.getBindingResult().getFieldErrors().forEach(error ->
-                errors.put(error.getField(), error.getDefaultMessage())
-        );
-        return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
-    }*/
 
-
-    //------------------------------Helper functions---------------------------------------
+    //--------------------------------------Helper functions----------------------------------------------
     public double CalculateDistance(Position pos1, Position pos2){
         Double lat1 = pos1.getLat();
         Double lng1 = pos1.getLng();
