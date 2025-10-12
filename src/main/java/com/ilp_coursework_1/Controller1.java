@@ -1,28 +1,24 @@
 package com.ilp_coursework_1;
 
 import jakarta.validation.Valid;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
 
 @RestController
 public class Controller1 {
+    //Global Variables
     double threshold = 0.00015;
     int decimalPlaces = 6;
     double angleIncrement = 22.5;
 
     //2) UID
     @GetMapping("/api/v1/uid")
-    public String getUid() {
-        return "s2479712"; // Replace with your actual UID
-    }
+    public String getUid() {return "s2479712";}
 
     //3) distanceTo
     @PostMapping("/api/v1/distanceTo")
@@ -51,6 +47,7 @@ public class Controller1 {
         Position start = request.getStart();
         double angle = request.getAngle(); // Angle in DEGREES
 
+        //Check angle is a multiple of 22.5
         if (angle % angleIncrement == 0){
 
         double deltaLat = threshold * Math.cos(Math.toRadians(angle));
@@ -77,6 +74,7 @@ public class Controller1 {
         Position point = request.getPosition();
         Region region = request.getRegion();
 
+        //Check list of vertices match requirements
         if (!region.checkValid()) {
             Map<String, String> error = new HashMap<>();
             error.put("error", "Region not valid. Must have at least 4 vertices, first and last vertex must be the same, no duplicate vertices allowed (except first and last)");
@@ -103,7 +101,7 @@ public class Controller1 {
         Double lat2 = pos2.getLat();
         Double lng2 = pos2.getLng();
 
-        Double distance = Math.sqrt(Math.pow(lat2 - lat1, 2) + Math.pow(lng2 - lng1, 2));
+        double distance = Math.sqrt(Math.pow(lat2 - lat1, 2) + Math.pow(lng2 - lng1, 2));
         return Rounding(distance, decimalPlaces);
     }
 
@@ -142,13 +140,5 @@ public class Controller1 {
         double slopeSeg1 = (x2 - x1) != 0 ? (y2 - y1) / (x2 - x1) : Double.MAX_VALUE;
         double slopeSeg2 = (px - x1) != 0 ? (py - y1) / (px - x1) : Double.MAX_VALUE;
         return slopeSeg2 >= slopeSeg1;
-    }
-    public ResponseEntity<?> checkMissingPositions(Position pos1, Position pos2){
-        if (pos1 == null || pos2 == null) {
-            Map<String, String> error = new HashMap<>();
-            error.put("error", "Both pos1 and pos2 must be provided in the request body");
-            return ResponseEntity.badRequest().body(error);
-        }
-        else return null;
     }
 }

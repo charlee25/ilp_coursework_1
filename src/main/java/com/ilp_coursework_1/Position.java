@@ -1,6 +1,5 @@
 package com.ilp_coursework_1;
 
-import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 
 public class Position {
@@ -16,11 +15,13 @@ public class Position {
         this.lng = lng;
     }
 
+    //Getters and Setters
     public Double getLat() {return lat;}
     public void setLat(Double lat) {this.lat = lat;}
     public Double getLng() {return lng;}
     public void setLng(Double lng) {this.lng = lng;}
 
+    //Override for ease of checking if two positions are the same
     @Override
     public boolean equals(Object obj) {
         if (this == obj) return true;

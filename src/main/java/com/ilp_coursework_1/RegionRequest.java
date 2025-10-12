@@ -3,8 +3,6 @@ package com.ilp_coursework_1;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 
-import java.util.List;
-
 public class RegionRequest {
     @Valid
     @NotNull(message = "position not found")

@@ -25,20 +25,13 @@ public class Region {
     public void setVertices(List<Position> vertices) {this.vertices = vertices;}
 
     public boolean checkValid() {
-        if (name == null || name.isEmpty() || vertices == null || vertices.size() < 4) {
+        //Check for valid no. vertices
+        if (vertices.size() < 4)
             return false;
-        }
-
-        for (Position vertex : vertices) {
-            if (vertex == null || vertex.getLat() == null || vertex.getLng() == null) {
-                return false;
-            }
-        }
 
         // First and last must be the same
-        if (!vertices.getFirst().equals(vertices.getLast())) {
+        if (!vertices.getFirst().equals(vertices.getLast()))
             return false;
-        }
 
         // No duplicate vertices, except the first and last being equal
         for (int i = 0; i < vertices.size(); i++) {
