@@ -10,7 +10,7 @@ import java.util.Map;
 import java.util.HashMap;
 
 @RestController
-public class Controller1 {
+public class Controller {
     //Global Variables
     double threshold = 0.00015;
     int decimalPlaces = 6;
@@ -48,7 +48,7 @@ public class Controller1 {
         double angle = request.getAngle(); // Angle in DEGREES
 
         //Check angle is a multiple of 22.5
-        if (angle % angleIncrement == 0){
+        if (angle % angleIncrement == 0 && angle < 360 && angle >= 0) {
 
         double deltaLat = threshold * Math.cos(Math.toRadians(angle));
         double deltaLng = threshold * Math.sin(Math.toRadians(angle));
@@ -63,7 +63,7 @@ public class Controller1 {
         }
         else {
             Map<String, String> error = new HashMap<>();
-            error.put("error", "Angle must be a multiple of " + angleIncrement + " degrees");
+            error.put("error", "Angle must be a multiple of " + angleIncrement + " degrees and between 0-360 degrees");
             return ResponseEntity.badRequest().body(error);
         }
     }
